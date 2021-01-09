@@ -1,0 +1,57 @@
+body {
+    font-family: "Roboto", sans-serif;
+    font-size: 13pt;
+    line-height: 1.3;
+}
+h1, h2, h3 { margin-top: 30px; }
+hr { 
+    border: 0;
+    border-top: 1px dotted #c0c0c0;
+}
+img { width: 50%; }
+.content {
+    max-width: 640px;
+    margin: auto;
+    margin-bottom: 100px;
+}
+@media screen and ( max-width: 720px ) {
+    .content {
+        margin: 0 40px 0 40px;    
+    }
+}
+.marginalia {
+    font-size: 14pt;
+    font-style: italic;
+}
+@media ( min-width: 960px ) {
+    .marginalia {
+        position: relative;
+        font-size: 10pt;
+    }
+    .marginalia_text {
+        position: absolute;
+        width: 120px;
+        right: 100%;
+        padding-right: 20px;
+        text-align: right;
+    }
+}
+.project {
+    font-size: 12pt;
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+.description {
+    font-size: 12pt;
+}
+.title {
+    font-size: 12pt;
+}
+.authors {
+    font-size: 10pt;
+    font-style: italic;
+}
+.venue {
+    font-size: 10pt;
+}
+
