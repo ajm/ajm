@@ -8,7 +8,14 @@ hr {
     border: 0;
     border-top: 1px dotted #c0c0c0;
 }
-img { width: 320px; }
+img { width: 200px; }
+.cropcircle {
+  width: 200px;
+  height: 200px;
+  position: relative;
+  overflow: hidden;
+  border-radius: 50%;
+}
 .content {
     max-width: 640px;
     margin: auto;
@@ -20,13 +27,16 @@ img { width: 320px; }
     }
 }
 .marginalia {
-    font-size: 14pt;
+    font-size: 12pt;
     font-style: italic;
+    color: DarkSlateGray;
+    display: none;
 }
 @media ( min-width: 960px ) {
     .marginalia {
         position: relative;
         font-size: 10pt;
+        display: block;
     }
     .marginalia_text {
         position: absolute;
@@ -35,14 +45,6 @@ img { width: 320px; }
         padding-right: 20px;
         text-align: right;
     }
-}
-.project {
-    font-size: 12pt;
-    font-weight: bold;
-    margin-bottom: 5px;
-}
-.description {
-    font-size: 12pt;
 }
 .title {
     font-size: 12pt;
