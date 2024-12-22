@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Word Golf</title>
+    <style>
+        body {
+            font-family: "Roboto", sans-serif;
+            font-size: 13pt;
+            height: 100vh;
+            margin: 0;
+            overflow: hidden;
+        }
+
+        #content {
+            max-width: 640px;
+            margin: auto;
+            margin-top: 40px;
+        }
+
+        @media screen and ( max-width: 720px ) {
+            #content {
+                margin: 20px 10px 0 10px;
+                font-size: 10pt;
+            }
+        }
+
+        #header {
+            margin: auto;
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+        }
+
+        #header h1 {
+            display: flex;
+            margin: 0;
+            margin-bottom: 5px;
+            color: #2b3d52;
+        }
+
+        #header p {
+            margin: 0;
+            font-weight: 400;
+            font-size: medium;
+        }
+
+        #header-title {
+            display: flex;
+            flex-direction: column;
+            align-self: flex-end;
+        }
+
+        #header-score {
+            display: flex;
+            flex-direction: column;
+            align-self: flex-end;
+        }
+
+        #header-score h2 {
+            margin: 0;
+            margin-left: auto;
+            margin-bottom: 5px;
+            color: #2b3d52;
+        }
+
+        #header-score p {
+            margin: 0;
+            margin-left: auto;
+            font-weight: 400;
+            font-size: medium;
+        }
+
+        hr {
+            border: 0;
+            border-top: 1px solid #c0c0c0;
+        }
+
+        #rules {
+            text-align: center;
+        }
+
+        canvas {
+            background-color: #ffffff;
+            cursor: grab;
+            margin:0;
+        }
+
+        #scoreboard {
+            font-size: 18px;
+            margin: 10px 0;
+        }
+
+        #scoreboard span {
+            font-weight: bold;
+            color: #2b3d52;
+        }
+    </style>
+</head>
+<body>
+    <div id="content">
+        <div id="header">
+            <div id="header-title">
+                <h1>WORD GOLF</h1>
+                <p>December 22, 2024</p>
+            </div>
+
+            <div id="header-score">
+                <h2 id="player-score">Triple bogey (6 words)</h2>
+                <p id="puzzle-difficulty">Par 3</p>
+            </div>
+        </div>
+
+        <hr />
+
+        <div id="rules">
+            <p>Use up all the letter tiles to spell as few words as possible!</p>
+        </div>
+    </div>
+
+    <canvas id="gameCanvas"></canvas>
+    
+
+
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+
+        const wordlist = ["een", "eger", "egers", "egest", "egis", "egre", "egret", "egrets", "ehs", "eight", "eighties", "eights", "eigne", "eish", "either", "ene", "enes", "eng", "engirt", "engs", "ens", "ensue", "ensuite", "ensure", "enter", "enters", "enthuse", "entire", "entires", "entries", "enure", "enures", "ere", "eres", "erg", "ergs", "erhu", "ern", "erne", "ernes", "erns", "ers", "erst", "ese", "esne", "est", "ester", "estrin", "esurient", "eten", "etens", "eth", "ethe", "ether", "etherising", "ethers", "eths", "etui", "etuis", "euge", "eugenist", "eugh", "eughs", "exert", "exerting", "exerts", "exes", "exeunt", "exies", "exigent", "exine", "exines", "exing", "exist", "existing", "exit", "exiting", "exits", "exsert", "exserting", "extern", "externs", "extine", "extinguish", "extinguisher", "gee", "gees", "geest", "geist", "geit", "geits", "gen", "gene", "genes", "genet", "genets", "genie", "genies", "genii", "geniture", "genitures", "genius", "genre", "genres", "gens", "gent", "gentes", "gentries", "gents", "genu", "genus", "ger", "gere", "gerent", "gerents", "geres", "gerne", "gert", "gest", "geste", "gesture", "get", "gets", "ghee", "ghees", "ghi", "ghis", "gie", "gien", "gies", "gin", "gins", "girn", "girns", "girsh", "girt", "girth", "girths", "girts", "gis", "gist", "git", "gite", "gites", "gits", "giust", "gnu", "gnus", "gree", "green", "greenish", "greens", "greenth", "greenths", "grees", "greet", "greets", "greisen", "gren", "grens", "grese", "grex", "grin", "grins", "gris", "grise", "grist", "grit", "grith", "griths", "grits", "grue", "grues", "grunt", "grunts", "grushie", "gue", "gues", "guest", "guise", "guiser", "gun", "gunite", "gunites", "guns", "gunter", "gunters", "gur", "gurn", "gurnet", "gurnets", "gurns", "gurs", "gursh", "gus", "gush", "gusher", "gushier", "gust", "gustier", "gut", "guts", "gutsier", "heinie", "heinies", "heir", "heiring", "heirs", "heist", "heister", "heisting", "hen", "henge", "henges", "henries", "hens", "hent", "hents", "her", "here", "herein", "heres", "hern", "herns", "hers", "herse", "hes", "hest", "het", "hete", "hets", "hex", "hexer", "hexers", "hexes", "hexing", "hie", "hieing", "hies", "hin", "hing", "hinge", "hinger", "hingers", "hinges", "hings", "hins", "hint", "hinter", "hinters", "hints", "hire", "hiree", "hirees", "hires", "hiring", "hirsute", "his", "hisn", "hist", "histing", "hit", "hits", "hue", "huer", "huers", "hues", "hug", "huge", "huger", "hugest", "hugs", "hui", "huis", "hun", "hung", "hunger", "hungers", "hungriest", "huns", "hunt", "hunter", "hunters", "hunts", "hurst", "hurt", "hurting", "hurts", "hut", "huts", "ignite", "igniter", "igniters", "ignites", "inert", "inerts", "ing", "ingest", "ings", "inhere", "inheres", "inherit", "inherits", "inrush", "ins", "insert", "inset", "insight", "insure", "integer", "integers", "inter", "inters", "intersex", "inti", "intis", "intrigue", "intrigues", "intuse", "inure", "inures", "inust", "ire", "ires", "iring", "iris", "ish", "isit", "ither", "its", "nee", "neg", "negs", "negus", "neigh", "neighs", "neist", "neither", "nereis", "nerite", "nerts", "nesh", "nest", "nester", "net", "nete", "netes", "nether", "nets", "neuritis", "neuter", "neuters", "next", "nexts", "nexus", "nie", "nies", "niger", "nigh", "nigher", "nighest", "nighs", "night", "nightie", "nighties", "nights", "nis", "nisei", "nish", "nisi", "nit", "nite", "niter", "niterie", "niteries", "niters", "nites", "nitre", "nitres", "nits", "nix", "nixe", "nixer", "nixes", "nixie", "nixies", "nth", "nug", "nugs", "nur", "nurs", "nurse", "nus", "nut", "nuts", "nutsier", "ree", "reen", "reens", "rees", "reest", "reesting", "reg", "regent", "regents", "reges", "regest", "regie", "regies", "regius", "regs", "reh", "rehinge", "rehinges", "rehs", "rehung", "rei", "reign", "reignite", "reignites", "reigns", "rein", "reins", "reis", "reishi", "reist", "ren", "renest", "renig", "renigs", "rens", "rent", "rente", "rentes", "rents", "res", "resent", "reset", "resh", "reshine", "resight", "resign", "resin", "resit", "resite", "resiting", "rest", "resting", "ret", "rete", "retes", "retie", "retieing", "reties", "retine", "retines", "retinue", "retinues", "rets", "retune", "retunes", "retuse", "reunite", "reunites", "reuse", "reusing", "rex", "rexes", "rexine", "rexines", "rhine", "rhus", "rig", "right", "righties", "rights", "rigs", "rin", "rine", "rines", "ring", "rings", "rins", "rinse", "rise", "risen", "rishi", "rising", "rit", "rite", "rites", "rits", "rue", "rueing", "rues", "rug", "rugs", "ruin", "ruing", "ruins", "run", "rune", "runes", "rung", "rungs", "runs", "runt", "runtish", "runts", "ruse", "rush", "rushee", "rushing", "rusine", "rust", "rusting", "rut", "ruth", "ruths", "rutin", "rutins", "ruts", "see", "seeing", "seen", "seer", "seething", "seg", "segni", "segue", "sei", "seigneur", "seine", "seiner", "seir", "sen", "sene", "sengi", "seniti", "sent", "sente", "senti", "ser", "sere", "serein", "serge", "serin", "serine", "sering", "set", "sex", "sexer", "sexier", "sexing", "sext", "sexting", "she", "sheen", "sheer", "sheering", "sheet", "sheeting", "shen", "shent", "shere", "shet", "shier", "shin", "shine", "shiner", "shinier", "shir", "shire", "shirt", "shirting", "shit", "shite", "shiur", "shri", "shrine", "shrug", "shun", "shunt", "shunter", "shut", "shute", "shuting", "siege", "sien", "sienite", "sieur", "sig", "sigh", "sigher", "sight", "sighter", "sign", "signee", "signer", "signet", "sihr", "sin", "sine", "sing", "singe", "singer", "sinh", "sinter", "sir", "sire", "siree", "siren", "siri", "sirih", "siring", "sit", "site", "sith", "sithe", "sithee", "sithen", "siting", "situ", "six", "sixer", "sixte", "sixteen", "sixth", "snee", "sneer", "snig", "snirt", "snit", "snug", "sri", "stee", "steer", "steering", "stein", "sten", "stere", "stern", "stie", "sting", "stinge", "stinger", "stingier", "stir", "strig", "strine", "string", "strung", "stun", "stung", "sture", "sue", "suent", "suer", "suet", "suete", "suetier", "sug", "sugh", "sui", "suing", "suint", "suit", "suite", "suiter", "suiting", "sun", "sung", "sure", "surge", "tee", "teeing", "teen", "teens", "teer", "teers", "tees", "teg", "tegs", "tegu", "tegus", "tehr", "tehrs", "tein", "teins", "ten", "tene", "tenes", "tenesi", "tenge", "tenges", "tens", "tense", "tenser", "tenue", "tenues", "tenuis", "tenure", "tenures", "teres", "tern", "terne", "ternes", "terns", "terse", "tes", "teugh", "tex", "texes", "the", "thee", "thegn", "thegns", "thein", "theine", "theines", "theins", "their", "theirs", "then", "thens", "there", "therein", "theres", "these", "theurgies", "thig", "thigs", "thin", "thine", "thing", "thingies", "things", "thins", "thir", "this", "three", "threes", "threne", "thru", "thug", "thugs", "thuris", "thus", "tie", "tieing", "tier", "tiering", "tiers", "ties", "tig", "tige", "tiger", "tigerish", "tigers", "tiges", "tigrish", "tigs", "tin", "tine", "tines", "ting", "tinge", "tinges", "tings", "tinier", "tins", "tire", "tires", "tiring", "tis", "tix", "tree", "treeing", "treen", "treens", "trees", "tres", "trie", "triene", "trienes", "triens", "tries", "trig", "trigs", "trin", "trine", "trines", "trins", "triune", "triunes", "true", "trueing", "trues", "trug", "trugs", "truing", "tug", "tugs", "tui", "tuis", "tun", "tune", "tuner", "tuners", "tunes", "tung", "tungs", "tuns", "tureen", "tureens", "turn", "turns", "tush", "tushie", "tushing", "tux", "tuxes", "ugh", "ughs", "ugs", "uneth", "unget", "ungirt", "uni", "unis", "unisex", "unit", "unite", "uniter", "uniters", "unites", "unities", "units", "unrest", "unrig", "unrigs", "uns", "unset", "unsex", "unsexier", "unsight", "untie", "unties", "ure", "ures", "urge", "urgent", "urges", "urine", "urines", "urite", "urn", "urns", "ursine", "use", "user", "usher", "ushering", "using", "ute", "uteri", "uterine", "utes", "utis", "uts", "xerus", "xis"]
+
+
+
+
+        const letters = ['E', 'X', 'T', 'I', 'N', 'G', 'U', 'I', 'S', 'H', 'E', 'R'];
+        letters.sort();
+        const letterObjects = [];
+        let dragging = null;
+        let offsetX, offsetY;
+        const par = 3;
+        const SNAP_THRESHOLD = 50;
+
+        const TILE_SIZE = 50;
+        const TILE_HALF = 25;
+        const TILE_COLOUR_FILL = '#ebebeb';
+        const TILE_COLOUR_FILL_LEGAL = '#b5e352';
+        const TILE_COLOUR_STROKE = '#586963';
+        const TILE_STACK_OFFSET = 7;
+        const TILE_STACK_PADDING = 10;
+
+        let previousPos = { x : 0, y : 0 };
+
+        const parDisplay = document.getElementById('puzzle-difficulty');
+        const scoreDisplay = document.getElementById('player-score');
+
+        function resize() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+
+            drawLetters();
+        }
+
+        function initialise() {
+            parDisplay.textContent = `Par ${par}`;
+            //scoreDisplay.textContent = `Tee-off!`;
+            updateScore(0, letters.length);
+            //wordCountDisplay.textContent = wordsCreated;
+            //scoreDisplay.textContent = "Even";
+
+            letterObjects.length = 0;
+
+            const letterCounts = {};
+            letters.forEach(letter => {
+                letterCounts[letter] = (letterCounts[letter] || 0) + 1;
+            });
+
+            const pileSpacing = TILE_SIZE + TILE_STACK_PADDING;
+            const startX = canvas.width / 2 - ((Object.keys(letterCounts).length * TILE_SIZE) + ((Object.keys(letterCounts).length - 1) * TILE_STACK_PADDING)) / 2;
+            let currentX = startX;
+
+            Object.keys(letterCounts).forEach(letter => {
+                for (let i = 0; i < letterCounts[letter]; i++) {
+                    const letterObj = {
+                        text: letter,
+                        x: currentX,
+                        y: 200 - i * TILE_STACK_OFFSET,
+                        colour: TILE_COLOUR_FILL,
+                    };
+                    letterObjects.push(letterObj);
+                }
+                currentX += pileSpacing;
+            });
+
+            drawLetters();
+        }
+
+        function drawLetters() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            letterObjects.forEach(letter => {
+
+                drawRoundedRect(ctx, letter.x, letter.y, letter.colour);
+
+                ctx.fillStyle = '#000';
+                ctx.font = '24px Arial';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(letter.text,
+                    letter.x + TILE_HALF,
+                    letter.y + TILE_HALF);
+            });
+        }
+
+        function drawRoundedRect(ctx, x, y, colour) {
+
+            const width = TILE_SIZE;
+            const height = TILE_SIZE;
+            const radius = 5;
+
+            ctx.beginPath();
+            ctx.moveTo(x + radius, y);
+            ctx.lineTo(x + width - radius, y);
+            ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
+            ctx.lineTo(x + width, y + height - radius);
+            ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
+            ctx.lineTo(x + radius, y + height);
+            ctx.quadraticCurveTo(x, y + height, x, y + height - radius);
+            ctx.lineTo(x, y + radius);
+            ctx.quadraticCurveTo(x, y, x + radius, y);
+            ctx.closePath();
+
+            ctx.fillStyle = colour;
+            ctx.fill();
+
+            ctx.strokeStyle = TILE_COLOUR_STROKE;
+            ctx.lineWidth = 2;
+            ctx.stroke();
+        }
+
+        function getMousePos(event) {
+            const rect = canvas.getBoundingClientRect();
+            return {
+                x: event.clientX - rect.left,
+                y: event.clientY - rect.top,
+            };
+        }
+
+        canvas.addEventListener('mousedown', (e) => {
+            const mousePos = getMousePos(e);
+            for (let i = letterObjects.length - 1; i >= 0; i--) {
+                const letter = letterObjects[i];
+                if (
+                    mousePos.x > letter.x &&
+                    mousePos.x < letter.x + TILE_SIZE &&
+                    mousePos.y > letter.y &&
+                    mousePos.y < letter.y + TILE_SIZE
+                ) {
+                    dragging = letter;
+
+                    // tile being dragged is always at end of array
+                    letterObjects.splice(i, 1);
+                    letterObjects.push(dragging);
+
+                    offsetX = mousePos.x - letter.x;
+                    offsetY = mousePos.y - letter.y;
+                    canvas.style.cursor = 'grabbing';
+
+                    previousPos.x = letter.x;
+                    previousPos.y = letter.y;
+
+                    break;
+                }
+            }
+        });
+
+        canvas.addEventListener('mousemove', (e) => {
+            if (dragging) {
+                const mousePos = getMousePos(e);
+                dragging.x = mousePos.x - offsetX;
+                dragging.y = mousePos.y - offsetY;
+                drawLetters();
+            }
+        });
+
+        canvas.addEventListener('mouseup', () => {
+            if (dragging) {
+                snapToClosestTile(dragging);
+                dragging = null;
+                checkWord();
+                drawLetters();
+            }
+            canvas.style.cursor = 'grab';
+        });
+
+
+        // Snap the current letter to the closest tile if within range
+        function snapToClosestTile(currentTile) {
+            const padding = 2;
+            
+            let closestTile = null;
+            let closestDistance = 10000;
+
+            letterObjects.forEach(tile => {
+                if (tile !== currentTile) {
+                    
+                    let dx = Math.abs(currentTile.x - tile.x);
+                    let dy = Math.abs(currentTile.y - tile.y);
+
+                    if (dy < SNAP_THRESHOLD && dx < SNAP_THRESHOLD * 2 && dx < closestDistance) {
+                        closestTile = tile;
+                        closestDistance = dx;
+                    }
+                }
+            });
+
+
+            if (closestTile !== null) {
+                if (currentTile.x < closestTile.x) {
+                    currentTile.x = closestTile.x - TILE_SIZE - padding;
+                }
+                else {
+                    currentTile.x = closestTile.x + TILE_SIZE + padding;
+                }
+                currentTile.y = closestTile.y;
+
+                // detect collisions
+                for (let i = 0; i < letterObjects.length; ++i) {
+                    let tile = letterObjects[i];
+                    if (tile !== currentTile) {
+                        if (tile.x === currentTile.x && tile.y === currentTile.y) {
+                            currentTile.x = previousPos.x;
+                            currentTile.y = previousPos.y;
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+
+        // Helper to group connected tiles
+        function groupConnectedLetters() {
+            const visited = new Set();
+            const groups = [];
+
+            function isConnected(tile1, tile2) {
+                const horizontallyAligned = Math.abs(tile1.y - tile2.y) == 0;
+                const adjacent = Math.abs(tile1.x + TILE_SIZE - tile2.x) < 10 || Math.abs(tile1.x - (tile2.x + TILE_SIZE)) < 10;
+                return horizontallyAligned && adjacent;
+            }
+
+            function dfs(currentTile, group) {
+                visited.add(currentTile);
+                group.push(currentTile);
+                letterObjects.forEach(tile => {
+                    if (!visited.has(tile) && isConnected(currentTile, tile)) {
+                        dfs(tile, group);
+                    }
+                });
+            }
+
+            letterObjects.forEach(tile => {
+                if (!visited.has(tile)) {
+                    const group = [];
+                    dfs(tile, group);
+                    groups.push(group);
+                }
+            });
+
+            return groups;
+        }
+
+        function legalWord(w) {
+            return wordlist.includes(w.toLowerCase());
+        }
+
+        // Submit words and check score
+        function checkWord() {
+            const groups = groupConnectedLetters();
+            let legalWords = 0;
+            let illegalWords = 0;
+            const words = []
+
+            groups.forEach(group => {
+                // Sort tiles in each group based on their x position
+                group.sort((a, b) => a.x - b.x);
+                const word = group.map(tile => tile.text).join('');
+
+                const isLegal = legalWord(word);
+                group.forEach(letter => {
+                    letter.colour = isLegal ? TILE_COLOUR_FILL_LEGAL : TILE_COLOUR_FILL;
+                });
+
+                words.push(word);
+
+                if (isLegal) {
+                    legalWords++;
+                }
+                else {
+                    illegalWords += word.length;
+                }
+            });
+
+            updateScore(legalWords, illegalWords);
+        }
+
+
+        // Update score
+        function updateScore(words, penalties) {
+
+            let scoreDiff = par - words - penalties;
+            let wordStr = words === 1 ? 'word' : 'words';
+            let penaultyStr = penalties === 1 ? 'penalty' : 'penalties';
+
+            if (words === 1 && penalties === 0) {
+                scoreDisplay.textContent = "Hole in one!";
+            }
+            else {
+
+                switch (scoreDiff) {
+                    case 0:
+                        scoreDisplay.textContent = "Par";
+                        break;
+                    case 1:
+                        scoreDisplay.textContent = "Birdie!";
+                        break;
+                    case 2:
+                        scoreDisplay.textContent = "Eagle!";
+                        break;
+                    case -1:
+                        scoreDisplay.textContent = "Bogey";
+                        break;
+                    case -2:
+                        scoreDisplay.textContent = "Double bogey";
+                        break;
+                    case -3:
+                        scoreDisplay.textContent = "Triple bogey";
+                        break
+                    default:
+                        scoreDisplay.textContent = `${Math.abs(scoreDiff)} over par`;
+                        break;
+                }
+            }
+
+            parDisplay.textContent = `Par ${par} - ${words} ${wordStr} - ${penalties} ${penaultyStr}`
+        }
+
+
+        window.onresize = function () { resize(); }
+        resize();
+        initialise();
+    </script>
+</body>
+</html>
