@@ -244,7 +244,16 @@
             };
         }
 
-        canvas.addEventListener('mousedown', (e) => {
+        canvas.addEventListener('mousedown', grabTile);
+        canvas.addEventListener('touchstart', grabTile);
+
+        canvas.addEventListener('mousemove', moveTile);
+        canvas.addEventListener('touchmove', moveTile);
+
+        canvas.addEventListener('mouseup', dropTile);
+        canvas.addEventListener('touchend', dropTile);
+
+        function grabTile(e) {
             const mousePos = getMousePos(e);
             for (let i = letterObjects.length - 1; i >= 0; i--) {
                 const letter = letterObjects[i];
@@ -270,18 +279,18 @@
                     break;
                 }
             }
-        });
+        }
 
-        canvas.addEventListener('mousemove', (e) => {
+        function moveTile(e) {
             if (dragging) {
                 const mousePos = getMousePos(e);
                 dragging.x = mousePos.x - offsetX;
                 dragging.y = mousePos.y - offsetY;
                 drawLetters();
             }
-        });
+        }
 
-        canvas.addEventListener('mouseup', () => {
+        function dropTile() {
             if (dragging) {
                 snapToClosestTile(dragging);
                 dragging = null;
@@ -289,7 +298,7 @@
                 drawLetters();
             }
             canvas.style.cursor = 'grab';
-        });
+        }
 
 
         // Snap the current letter to the closest tile if within range
